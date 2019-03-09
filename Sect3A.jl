@@ -1,11 +1,8 @@
-
 using Distributed
-addprocs();
+addprocs()
 
 using Gadfly, Cairo, Compose, DataFrames, CSV, Colors, Viridis
 @everywhere using Distributions, StatsBase, Distances, SharedArrays
-
-set_default_plot_size(10inch, 10inch/MathConstants.golden)
 
 function gen_colors(n)
     cs = distinguishable_colors(n, 
@@ -39,12 +36,12 @@ function bc_upd(ϵ::Float64, ev_start::Bool, n_agents::Int64, averaging)
     return bc_ar
 end
 
-res = bc_upd(.1, true, 50, mean);
+res = bc_upd(.1, true, 50, mean)
 
 df = DataFrame(res')
 names!(df, [Symbol("$i") for i in 1:size(res, 1)])
 df = stack(df)
-df[:steps] = repeat(0:(size(res, 2) - 1), outer=size(res, 1));
+df[:steps] = repeat(0:(size(res, 2) - 1), outer=size(res, 1))
 
 plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Coord.cartesian(xmax=size(res, 2)),
@@ -75,12 +72,12 @@ function bc_upd_rad(ϵ::Float64, ev_start::Bool, r_opinion::Float64, n_normals::
     return bc_ar
 end
 
-res_rad = bc_upd_rad(.3, true, 0.9, 50, 21, mean);
+res_rad = bc_upd_rad(.3, true, 0.9, 50, 21, mean)
 
 df = DataFrame(res_rad')
 names!(df, [Symbol("$i") for i in 1:size(res_rad, 1)])
 df = stack(df)
-df[:steps] = repeat(0:size(res_rad, 2) - 1, outer=size(res_rad, 1));
+df[:steps] = repeat(0:size(res_rad, 2) - 1, outer=size(res_rad, 1))
 
 plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Coord.cartesian(xmax=size(res_rad, 2)),
@@ -110,8 +107,6 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     return sum(@. abs(bc_ar[:, end] - r_opinion) <= 10^-3) - n_radicals
 end
 
-radicalized_normals_count(.1, true, .9, 30, 10, mean);
-
 function radical_count_parallel(ev_start::Bool, r_opinion::Float64, n_normals::Int64, averaging)
     res = Array{Int64,2}(undef, 50, 50) # creates a 50 * 50 grid, each cell corresponding to one combination of ϵ and number of radicals
     for j in 1:50
@@ -120,7 +115,7 @@ function radical_count_parallel(ev_start::Bool, r_opinion::Float64, n_normals::I
     return res
 end
 
-out = radical_count_parallel(true, 1.0, 50, mean);
+out = radical_count_parallel(true, 1.0, 50, mean)
 
 function xlabelname(x)
     n = x/100
@@ -132,7 +127,7 @@ function ylabelname(x)
     return "$n"
 end
 
-ticks = collect(0:10:50);
+ticks = collect(0:10:50)
 
 Gadfly.spy(rotl90(out),
     Guide.ColorKey(title="Radicalized\nnormals"),
@@ -179,9 +174,9 @@ function rand_sim(r_opinion::Float64, n_normals::Int64, n_radicals::Int64, n_sim
     return rand_res
 end
 
-rand_res = rand_sim(1.0, 50, 50, 100, mean);
+rand_res = rand_sim(1.0, 50, 50, 100, mean)
 
-out_av = mean(rand_res, dims=3);
+out_av = mean(rand_res, dims=3)
 
 Gadfly.spy(rotl90(out_av[:, :, 1]),
     Guide.ColorKey(title="Radicalized\nnormals"),
@@ -189,8 +184,7 @@ Gadfly.spy(rotl90(out_av[:, :, 1]),
     Guide.xticks(ticks=ticks), Scale.x_continuous(labels=xlabelname),
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=0, maxvalue=50, colormap=Viridis.viridis),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
 @everywhere function mixed_community_sim(ϵ::Float64, ev_start::Bool, r_opinion::Float64, n_truthseekers::Int64, n_indifs::Int64, n_radicals::Int64, α::Float64, τ::Float64, averaging_op, averaging_eps)
     n_normals = n_truthseekers + n_indifs
@@ -246,8 +240,7 @@ Gadfly.spy(truth_res[end:-1:1, :],
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=0, maxvalue=maxvalue=maximum(truth_res), colormap=Viridis.viridis),
     Guide.title("τ = $τ, ρ = $ρ, ϵ = $ϵ, α = $α"),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
 Gadfly.spy(indif_res[end:-1:1, :],
     Guide.ColorKey(title="Free riders\nbelieving τ (proportion)"),
@@ -255,8 +248,7 @@ Gadfly.spy(indif_res[end:-1:1, :],
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=0, maxvalue=maximum(indif_res), colormap=Viridis.viridis),
     Guide.title("τ = $τ, ρ = $ρ, ϵ = $ϵ, α = $α"),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
 @everywhere function sim_mixed_rad(ϵ::Float64, r_opinion::Float64, n_indifs::Int64, n_radicals::Int64, α::Float64, τ::Float64) # does basically the same as the previous functions, except that we now average over 50 simulations
     mm = Array{Float64,2}(undef, 50, 2)
@@ -276,7 +268,7 @@ end
 
 out3 = away_from_truth(.1, .3, .5, 0)
 out5 = away_from_truth(.1, .5, .5, 0)
-out7 = away_from_truth(.1, .7, .5, 0);
+out7 = away_from_truth(.1, .7, .5, 0)
 
 Gadfly.spy(rotl90(out3)*50,
     Guide.ColorKey(title="Normals believing\nthe truth"),
@@ -285,8 +277,7 @@ Gadfly.spy(rotl90(out3)*50,
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=0, maxvalue=50, colormap=Viridis.viridis),
     Guide.title("τ = 0.1, ρ = 0.3, α = 0.5"),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
 out3_50 = away_from_truth(.1, .3, .5, 50)
 out5_50 = away_from_truth(.1, .5, .5, 50)
@@ -299,7 +290,4 @@ Gadfly.spy(rotl90(out7 - out7_50)*50,
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=-50, maxvalue=50, colormap=Viridis.viridis),
     Guide.title("τ = $τ, ρ = $ρ, α = $α, #FR = 50"),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
-
-
+    Theme(grid_color=colorant"white", panel_fill="white"))

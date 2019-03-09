@@ -1,7 +1,4 @@
-
 using Distributions, Gadfly, Compose, Cairo, DataFrames, StatsBase, Distances
-
-set_default_plot_size(10inch, 10inch/MathConstants.golden) # may need adjustment, depending on your browser settings
 
 function gen_colors(n) # to create your own colors, here based on one of the brewer series
     cs = distinguishable_colors(n,
@@ -17,9 +14,9 @@ end
 
 const n_agents = 50
 const n_steps = 50
-const start = rand(n_agents);
+const start = rand(n_agents)
 
-bc_ar = Array{Float64,2}(undef, n_agents, n_steps + 1);
+bc_ar = Array{Float64,2}(undef, n_agents, n_steps + 1)
 
 function bc_upd(ϵ::Float64, α::Float64, τ::Float64, averaging)
     bc_ar[:, 1] = start
@@ -31,14 +28,14 @@ end
 
 ϵ = 0.1
 α = 0.5
-τ = 0.7;
+τ = 0.7
 
-res = bc_upd(ϵ, α, τ, mean);
+res = bc_upd(ϵ, α, τ, mean)
 
 df = DataFrame(res')
 names!(df, [Symbol("$i") for i in 1:n_agents])
 df = stack(df)
-df[:steps] = repeat(1:n_steps + 1, outer=n_agents);
+df[:steps] = repeat(1:n_steps + 1, outer=n_agents)
 
 plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Coord.cartesian(xmax=51),
@@ -47,8 +44,4 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Guide.title("ϵ = $ϵ / α = $α / τ = $τ / arithmetic mean"),
     yintercept=[τ], Geom.hline(style=:dot, color=colorant"grey"),
     Guide.annotation(compose(context(), Compose.text(22, τ + 0.015, "τ"), fontsize(13pt))),
-    Theme(key_position=:none, point_size=1.25pt,
-        major_label_font_size=14pt,
-        minor_label_font_size=10pt)) # font size may need adjustement, depending on your browser settings
-
-
+    Theme(key_position=:none, point_size=1.25pt))
