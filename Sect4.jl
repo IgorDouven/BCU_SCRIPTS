@@ -1,14 +1,11 @@
-
 using Distributed
-addprocs();
+addprocs(10)
 
 using Gadfly, Cairo, Compose, DataFrames, CSV, Colors, Viridis, HypothesisTests, ANOVA, GLM, RCall
 @everywhere using Distributions, StatsBase, Distances, SharedArrays
 
-set_default_plot_size(10inch, 10inch/MathConstants.golden)
-
 function gen_colors(n)
-    cs = distinguishable_colors(n, 
+    cs = distinguishable_colors(n,
         [colorant"#66c2a5", colorant"#fc8d62", colorant"#8da0cb", colorant"#e78ac3",
             colorant"#a6d854", colorant"#ffd92f", colorant"#e5c494", colorant"#b3b3b3"],
         lchoices=Float64[58, 45, 72.5, 90],
@@ -51,7 +48,7 @@ function mixed_community(ϵ::Float64, ev_start::Bool, r_opinion::Float64, n_trut
     return df1
 end
 
-out_mixed = mixed_community(.25, false, .9, 25, 20, 10, .25, .65, mean);
+out_mixed = mixed_community(.25, false, .9, 25, 20, 10, .25, .65, mean)
 
 plot(out_mixed, x=:steps, y=:value, group=:variable, color=:Agent, Geom.point, Geom.line,
     Coord.cartesian(xmax=maximum(out_mixed[:steps]) + 1),
@@ -124,7 +121,7 @@ function radical_count_parallel_with_cd(ev_start::Bool, r_opinion::Float64, n_no
     return res
 end
 
-out_cd = radical_count_parallel_with_cd(true, 0.8, 50, mean, mean);
+out_cd = radical_count_parallel_with_cd(true, 0.8, 50, mean, mean)
 
 function xlabelname(x)
     n = x/100
@@ -136,7 +133,7 @@ function ylabelname(x)
     return "$n"
 end
 
-ticks = collect(0:10:50);
+ticks = collect(0:10:50)
 
 Gadfly.spy(rotl90(out_cd),
     Guide.ColorKey(title="Radicalized\nnormals"),
@@ -145,8 +142,7 @@ Gadfly.spy(rotl90(out_cd),
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Guide.title("ρ = 0.8"),
     Scale.color_continuous(minvalue=0, maxvalue=50, colormap=Viridis.viridis),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
 @everywhere function radicalized_average_cd(ϵ_start::Float64, r_opinion::Float64, n_normals::Int64, n_radicals::Int64, averaging_op, averaging_eps)
     st = rand(n_normals)
@@ -191,9 +187,9 @@ function rand_sim_cd(r_opinion::Float64, n_normals::Int64, n_sim::Int64, averagi
     return rand_res
 end
 
-rand_res_cd = rand_sim_cd(1.0, 50, 100, mean, mean);
+rand_res_cd = rand_sim_cd(1.0, 50, 100, mean, mean)
 
-out_av_cd = mean(rand_res_cd, dims=3);
+out_av_cd = mean(rand_res_cd, dims=3)
 
 Gadfly.spy(rotl90(out_av_cd[:, :, 1]),
     Guide.ColorKey(title="Radicalized\nnormals"),
@@ -202,12 +198,11 @@ Gadfly.spy(rotl90(out_av_cd[:, :, 1]),
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=0, maxvalue=50, colormap=Viridis.viridis),
     Guide.title("ρ = 1.0"),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
-rand_res_cd = rand_sim_cd(.8, 50, 100, mean, mean);
+rand_res_cd = rand_sim_cd(.8, 50, 100, mean, mean)
 
-out_av_cd = mean(rand_res_cd, dims=3);
+out_av_cd = mean(rand_res_cd, dims=3)
 
 Gadfly.spy(rotl90(out_av_cd[:, :, 1]),
     Guide.ColorKey(title="Radicalized\nnormals"),
@@ -216,8 +211,7 @@ Gadfly.spy(rotl90(out_av_cd[:, :, 1]),
     Guide.yticks(ticks=ticks), Scale.y_continuous(labels=ylabelname),
     Scale.color_continuous(minvalue=0, maxvalue=50, colormap=Viridis.viridis),
     Guide.title("ρ = 0.8"),
-    Theme(grid_color=colorant"white", panel_fill="white")
-)
+    Theme(grid_color=colorant"white", panel_fill="white"))
 
 function mixed_community_cd(ϵ_start::Float64, ev_start::Bool, r_opinion::Float64, n_truthseekers::Int64, n_indifs::Int64, n_radicals::Int64, α::Float64, τ::Float64, averaging_op, averaging_eps)
     n_normals = n_truthseekers + n_indifs
@@ -256,7 +250,7 @@ function mixed_community_cd(ϵ_start::Float64, ev_start::Bool, r_opinion::Float6
     return df1
 end
 
-out_mixed_cd = mixed_community_cd(.5, false, .9, 25, 20, 10, .25, .65, mean, mean);
+out_mixed_cd = mixed_community_cd(.5, false, .9, 25, 20, 10, .25, .65, mean, mean)
 
 plot(out_mixed_cd, x=:steps, y=:value, group=:variable, color=:Agent, Geom.point, Geom.line,
     Coord.cartesian(xmax=maximum(out_mixed_cd[:steps]) + 1),
@@ -268,7 +262,7 @@ plot(out_mixed_cd, x=:steps, y=:value, group=:variable, color=:Agent, Geom.point
     Theme(panel_fill="white", point_size=1.25pt, line_width=1.5pt))
 
 out_mixed = mixed_community(.25, false, .0, 50, 0, 0, .75, .7, mean)
-out_mixed_cd = mixed_community_cd(.5, false, .0, 50, 0, 0, .75, .7, mean, mean);
+out_mixed_cd = mixed_community_cd(.5, false, .0, 50, 0, 0, .75, .7, mean, mean)
 
 plot(out_mixed, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Coord.cartesian(xmax=maximum(out_mixed[:steps]) + 1),
@@ -286,7 +280,7 @@ plot(out_mixed_cd, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Guide.title("τ = .7, ϵ⁰ ∼ U(0, .5), α = .75"),
     Theme(key_position=:none, panel_fill="white", point_size=1.25pt, line_width=1.5pt))
 
-@everywhere const n_steps = 50;
+@everywhere const n_steps = 50
 
 @everywhere function bc_upd_ri_cd(ϵ_start::Float64, α::Float64, τ::Float64, r_opinion::Float64, n_truthseekers::Int64, n_indifs::Int64, n_radicals::Int64, averaging)
     n_agents = n_truthseekers + n_indifs
@@ -328,7 +322,7 @@ nsim = 1000
 without = cost_sim_ri_cd(ϵ, α, τ, ρ1, 50, 0, 0, mean, nsim)
 withNarrow = cost_sim_ri_cd(ϵ, α, τ, ρ1, 50, 0, 25, mean, nsim)
 withModerate = cost_sim_ri_cd(ϵ, α, τ, ρ2, 50, 0, 25, mean, nsim)
-withWide = cost_sim_ri_cd(ϵ, α, τ, ρ3, 50, 0, 25, mean, nsim);
+withWide = cost_sim_ri_cd(ϵ, α, τ, ρ3, 50, 0, 25, mean, nsim)
 
 data = vcat(without, withNarrow, withModerate, withWide)
 groups = categorical(repeat(1:4, inner=nsim))
@@ -336,17 +330,17 @@ df_aov = DataFrame(data = data, groups = groups)
 model = fit(LinearModel, @formula(data ~ groups), df_aov, contrasts = Dict(:groups => EffectsCoding()))
 anova(model)
 
-mns = DataFrame(WO = without[:], WN = withNarrow[:], WM = withModerate[:], WW = withWide[:]);
+mns = DataFrame(WO = without[:], WN = withNarrow[:], WM = withModerate[:], WW = withWide[:])
 
 plot(mns, x=Col.index, y=Col.value,
     Geom.boxplot,
-    Scale.x_discrete(levels=names(mns)), 
+    Scale.x_discrete(levels=names(mns)),
     Guide.xlabel("Condition"),
     Guide.ylabel("SSE"),
     Guide.title("τ = $τ, ρ = $ρ1/$ρ2/$ρ3 (WN/WM/WW), ϵ = $ϵ, α = $α"),
     Theme(default_color=colorant"#66c2a5", panel_fill="white"))
 
-@rput df_aov;
+@rput df_aov
 
 R"""
 m <- aov(data ~ groups, data=df_aov)
@@ -385,13 +379,13 @@ rename!(mns, :X => Symbol("0"), :Y => Symbol("10"), :Z => Symbol("25"), :W => Sy
 
 plot(mns, x=Col.index, y=Col.value,
     Geom.boxplot,
-    Scale.x_discrete(levels=names(mns)), 
+    Scale.x_discrete(levels=names(mns)),
     Guide.xlabel("Free riders"),
     Guide.ylabel("SSE"),
     Guide.title("τ = $τ, ρ = $ρ, ϵ = $ϵ, α = $α"),
     Theme(default_color=colorant"#66c2a5", panel_fill="white"))
 
-@rput df_aov;
+@rput df_aov
 
 R"""
 m <- aov(data ~ groups, data=df_aov)
@@ -405,5 +399,3 @@ R"etaSquared(m)"
 mean(without), mean(with10), mean(with25), mean(with50)
 
 std(without), std(with10), std(with25), std(with50)
-
-
