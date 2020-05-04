@@ -1,4 +1,4 @@
-using Distributions, Gadfly, Compose, Cairo, DataFrames, StatsBase, Distances
+using Distributions, Gadfly, Compose, Cairo, DataFrames, StatsBase, Distances, Colors
 
 function gen_colors(n) # to create your own colors, here based on one of the brewer series
     cs = distinguishable_colors(n,
@@ -12,9 +12,9 @@ function gen_colors(n) # to create your own colors, here based on one of the bre
     convert(Vector{Color}, cs)
 end
 
-const n_agents = 50
-const n_steps = 50
-const start = rand(n_agents)
+n_agents = 50
+n_steps = 50
+start = rand(n_agents)
 
 bc_ar = Array{Float64,2}(undef, n_agents, n_steps + 1)
 
@@ -26,22 +26,24 @@ function bc_upd(ϵ::Float64, α::Float64, τ::Float64, averaging)
     return bc_ar
 end
 
-ϵ = 0.1
-α = 0.5
+ϵ = 0.25
+α = 0.9
 τ = 0.7
 
 res = bc_upd(ϵ, α, τ, mean)
 
 df = DataFrame(res')
-names!(df, [Symbol("$i") for i in 1:n_agents])
+rename!(df, [Symbol("$i") for i in 1:n_agents])
 df = stack(df)
-df[:steps] = repeat(1:n_steps + 1, outer=n_agents)
+df[!, :steps] = repeat(1:n_steps + 1, outer=n_agents)
 
-plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
-    Coord.cartesian(xmax=51),
+p = plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
+    Coord.cartesian(xmax=40),
     Guide.xlabel("Time"),
     Guide.ylabel("Opinion"),
     Guide.title("ϵ = $ϵ / α = $α / τ = $τ / arithmetic mean"),
     yintercept=[τ], Geom.hline(style=:dot, color=colorant"grey"),
     Guide.annotation(compose(context(), Compose.text(22, τ + 0.015, "τ"), fontsize(13pt))),
     Theme(key_position=:none, point_size=1.25pt))
+
+draw(PNG("BCU0250907.png", 7inch, 5inch), p)
