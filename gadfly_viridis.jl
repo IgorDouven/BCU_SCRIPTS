@@ -17,7 +17,6 @@ const ϵ = 0.1
 const α = 0.2
 const τ = 0.7
 
-#using BenchmarkTools
 res = bc_upd(ϵ, α, τ, 50, 30)
 
 df₀ = res |> rotr90 |> DataFrame
@@ -37,7 +36,9 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
 
 # different approach
 
-mutable struct Agent
+abstract type Agent end
+
+mutable struct TruthSeeker <: Agent
     ϵ::Float64
     α::Float64
     op::Float64
@@ -48,13 +49,13 @@ const α = .2
 const τ = .7
 const numb_agents = 50
 
-ppl = [ Agent(ϵ, α, rand()) for _ in 1:numb_agents ]
+ppl = [ TruthSeeker(ϵ, α, rand()) for _ in 1:numb_agents ]
 
-opinions(pop::Array{Agent,1}) = Float64[ pop[i].op for i in 1:numb_agents ]
+opinions(pop::Array{TruthSeeker,1}) = Float64[ pop[i].op for i in 1:numb_agents ]
 
-peers(pop::Array{Agent,1}) = Bool[ abs(pop[j].op - pop[i].op) ≤ pop[j].ϵ for i in 1:numb_agents, j in 1:numb_agents ] # the peers for agent j are in the j-th column
+peers(pop::Array{TruthSeeker,1}) = Bool[ abs(pop[j].op - pop[i].op) ≤ pop[j].ϵ for i in 1:numb_agents, j in 1:numb_agents ] # the peers for agent j are in the j-th column
 
-function update!(pop::Array{Agent,1})
+function update!(pop::Array{TruthSeeker,1})
     prs = peers(pop)
     ops = opinions(pop)
     soc = sum(ops .* prs, dims=1) ./ sum(prs, dims=1)
@@ -63,7 +64,7 @@ function update!(pop::Array{Agent,1})
     end
 end
 
-function run_model(pop::Array{Agent,1}, numb_updates::Int)
+function run_model(pop::Array{TruthSeeker,1}, numb_updates::Int)
     pp = deepcopy(pop)
     res = zeros(numb_agents, numb_updates + 1)
     res[:, 1] = opinions(pp)
@@ -74,7 +75,22 @@ function run_model(pop::Array{Agent,1}, numb_updates::Int)
     return res
 end
 
+function run_model(pop::Array{TruthSeeker,1})
+    pp = deepcopy(pop)
+    res = Array{Float64,1}[]
+    push!(res, opinions(pp))
+    while true
+        update!(pp)
+        push!(res, opinions(pp))
+        if all(isapprox.(res[end], res[end - 1], atol=10^-5))
+            break
+        end
+    end
+    return reduce(hcat, res)
+end
+
 res = run_model(ppl, 30)
+res = run_model(ppl)
 
 df₀ = res |> rotr90 |> DataFrame
 srt = sortperm(Vector(df₀[1, :]))
