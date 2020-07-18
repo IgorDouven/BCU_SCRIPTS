@@ -131,7 +131,7 @@ function run_model(ϵ_inf::Float64, ϵ_sup::Float64, α_inf::Float64, α_sup::Fl
     return reduce(hcat, res)
 end
 
-res = run_model(.0, .25, .0, .5, .7, 50, 30)
+res = run_model(.0, .25, .0, .5, .7, 50, 75)
 res = run_model(.0, .25, .0, .5, .7, 50)
 
 df₀ = res |> rotr90 |> DataFrame
@@ -146,6 +146,6 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Guide.xlabel("Time"),
     Scale.color_discrete_manual(palette...),
     Guide.ylabel("Opinion"),
-    Guide.title("ϵ₀ = U(0, .25)/ α₀ = U(0, .5) / τ = .7"),
+    Guide.title("ϵᵢ = U(0, .25)/ αᵢ = U(0, .5) / τ = .7"),
     Theme(key_position=:none, point_size=1.5pt))
 
