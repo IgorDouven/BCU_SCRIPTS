@@ -1,7 +1,7 @@
 using Distributed
 addprocs()
 
-using Gadfly, Cairo, Compose, DataFrames, CSV, Colors, Viridis
+using Gadfly, Cairo, Compose, DataFrames, CSV, Colors, ColorSchemes
 @everywhere using Distributions, StatsBase, Distances, SharedArrays
 
 function gen_colors(n)
@@ -115,7 +115,7 @@ function radical_count_parallel(ev_start::Bool, r_opinion::Float64, n_normals::I
     return res
 end
 
-out = radical_count_parallel(true, 1.0, 50, mean)
+@time out = radical_count_parallel(true, 1.0, 50, mean)
 
 function xlabelname(x)
     n = x/100
@@ -174,9 +174,9 @@ function rand_sim(r_opinion::Float64, n_normals::Int64, n_radicals::Int64, n_sim
     return rand_res
 end
 
-rand_res = rand_sim(1.0, 50, 50, 100, mean)
+@time rand_res = rand_sim(0.8, 50, 50, 100, mean)
 
-out_av = mean(rand_res, dims=3)
+@time out_av = mean(rand_res, dims=3)
 
 Gadfly.spy(rotl90(out_av[:, :, 1]),
     Guide.ColorKey(title="Radicalized\nnormals"),

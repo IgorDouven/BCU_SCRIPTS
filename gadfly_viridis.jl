@@ -38,7 +38,7 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
 
 # different approach
 
-abstract type Agent end
+@everywhere abstract type Agent end
 
 @everywhere mutable struct TruthSeeker <: Agent
     ϵ::Float64
@@ -324,7 +324,7 @@ function conv_sims()
     return perc_mat
 end
 
-res = conv_sims()
+@time res = conv_sims()
 
 function xlabelname(x)
     n = x/100
