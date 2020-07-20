@@ -38,7 +38,9 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
 
 # different approach
 
-@everywhere mutable struct TruthSeeker
+abstract type Agent end
+
+@everywhere mutable struct TruthSeeker <: Agent
     ϵ::Float64
     α::Float64
     op::Float64
@@ -201,13 +203,13 @@ lm(@formula(SSE ~ α + ϵ + τ), res)
 
 # further types of agents
 
-@everywhere mutable struct FreeRider
+@everywhere mutable struct FreeRider <: Agent
     ϵ::Float64
     α::Float64
     op::Float64
 end
 
-@everywhere mutable struct Campaigner
+@everywhere mutable struct Campaigner <: Agent
     ϵ::Float64
     α::Float64
     op::Float64
