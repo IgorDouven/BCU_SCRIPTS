@@ -19,6 +19,18 @@ function bc_upd(ϵ::Float64, α::Float64, τ::Float64, n_agents::Int, n_steps::I
     return bc_ar
 end
 
+# simplest, most straightforward version, for illustration
+function bc_upd(ϵ, α, τ, n_agents, n_steps)
+    bc_ar = zeros(n_agents, n_steps + 1)
+    bc_ar[:, 1] = rand(n_agents)
+    for j in 1:n_steps
+        for i in 1:n_agents
+            bc_ar[i, j + 1] = (1 - α)*mean(bc_ar[:, j][findall(abs.(bc_ar[:, j] .- bc_ar[:, j][i]) .< ϵ)]) + α*τ
+        end
+    end
+    return bc_ar
+end
+
 res = bc_upd(.1, .2, .7, 50, 30)
 
 df₀ = res |> rotr90 |> DataFrame
@@ -156,7 +168,7 @@ plot(df, x=:steps, y=:value, color=:variable, Geom.point, Geom.line,
     Guide.title("ϵᵢ = U(0, .25)/ αᵢ = U(0, .5) / τ = .7"),
     Theme(key_position=:none, point_size=1.5pt))
 
-# we can already some interesting statistics: record the agents' ϵ and α values, and measure their accuracy, and look whether the former are good predictors of the latter
+# we can already do some interesting statistics: record the agents' ϵ and α values, and measure their accuracy, and look whether the former are good predictors of the latter
 
 function conc(ar::AbstractArray, numb_simulations::Int)
     x = ar[:, :, 1]
